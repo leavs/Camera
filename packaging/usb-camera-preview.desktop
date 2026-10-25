@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=USB 摄像头预览
+Comment=置顶、可拖动的 USB 摄像头实时预览
+Exec=usb-camera-preview
+Icon=usb-camera-preview
+Terminal=false
+StartupNotify=false
+StartupWMClass=USB 摄像头预览
+Categories=AudioVideo;Video;

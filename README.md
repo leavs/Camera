@@ -24,6 +24,24 @@ bash start.sh
 
 在 Linux 的 GNOME Wayland 桌面下，程序默认使用 XWayland，以支持窗口定位与置顶。手动设置 `QT_QPA_PLATFORM=wayland` 后，位置可能受桌面合成器限制。自动隐藏任务栏的避让取决于桌面报告的可用区域。
 
+## DEB 安装包
+
+面向 Ubuntu 24.04 amd64，内置 Python、PySide6 和 Qt，无需在目标设备上安装 pip 依赖或创建虚拟环境。系统依赖由 apt 安装。
+
+```bash
+sudo apt install ./dist/usb-camera-preview_1.0.0_amd64.deb
+```
+
+安装后可从应用菜单打开「USB 摄像头预览」，或运行 `usb-camera-preview`。桌面图标及左侧栏收藏属于用户设置，安装包不会自动修改。卸载命令为 `sudo apt remove usb-camera-preview`。
+
+重新构建（需联网安装构建依赖）：
+
+```bash
+bash build_deb.sh 1.0.0
+```
+
+产物及 SHA256 校验文件保存在 `dist/`。如需支持较旧系统，应在对应系统中重新构建。
+
 ## 当前设备验证
 
 已在 Ubuntu 24.04 / GNOME 桌面检测到 `1080P USB Camera`，并收到实际 `1280×720` 视频帧。默认窗口尺寸为 `384×292`；系统工作区域为 `(66, 32, 1854, 1048)` 时，右侧居中坐标为 `(1524, 410)`。已通过 X11 窗口属性确认置顶状态，Python 语法与启动脚本语法检查通过。
