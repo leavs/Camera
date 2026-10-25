@@ -1,0 +1,62 @@
+name: Build DEB and publish signed APT repository
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apt-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install build and Qt runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv binutils apt-utils gnupg libegl1 libgl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0 libpulse0 libsm6 libice6
+      - name: Build standalone DEB
+        run: bash build_deb.sh "$(cat VERSION)+git${GITHUB_RUN_NUMBER}"
+      - name: Check package installation
+        run: sudo apt-get install -y ./dist/*.deb
+      - name: Build and sign APT repository
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+          APT_SIGNING_FINGERPRINT: ${{ vars.APT_SIGNING_FINGERPRINT }}
+        run: |
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
+          trap 'gpgconf --kill gpg-agent; rm -rf "$GNUPGHOME"' EXIT
+          printf '%s' "$APT_SIGNING_KEY" | gpg --batch --import
+          unset APT_SIGNING_KEY
+          bash packaging/build_apt_repo.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-amd64
+          path: dist/*
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/apt-repo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy APT repository to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

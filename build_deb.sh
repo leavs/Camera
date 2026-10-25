@@ -2,8 +2,8 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 version="${1:-1.0.0}"
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo 'Version must have the form 1.0.0' >&2
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\+git[0-9]+)?$ ]]; then
+    echo 'Version must have the form 1.0.0 or 1.0.0+git123' >&2
     exit 1
 fi
 architecture="$(dpkg --print-architecture)"
