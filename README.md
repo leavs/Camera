@@ -26,13 +26,13 @@ bash start.sh
 
 ## APT 软件源
 
-公开的软件源：`https://leavs.github.io/Camera/`。当前提供 Ubuntu 24.04 amd64 安装包，其他发行版未验证；不是面向所有 Debian/Ubuntu 版本的通用包。
+公共工具软件源（多个工具共用）：`https://leavs.github.io/apt/`。当前提供 Ubuntu 24.04 amd64 安装包，其他发行版未验证；不是面向所有 Debian/Ubuntu 版本的通用包。
 
 首次添加软件源：
 
 ```bash
 sudo apt-get install -y ca-certificates curl gnupg
-curl -fsSL https://leavs.github.io/Camera/apt-key.gpg -o /tmp/camera-apt-key.gpg
+curl -fsSL https://leavs.github.io/apt/apt-key.gpg -o /tmp/camera-apt-key.gpg
 gpg --show-keys --with-fingerprint /tmp/camera-apt-key.gpg
 ```
 
@@ -40,15 +40,15 @@ gpg --show-keys --with-fingerprint /tmp/camera-apt-key.gpg
 
 ```bash
 sudo install -d -m 755 /etc/apt/keyrings
-sudo install -m 644 /tmp/camera-apt-key.gpg /etc/apt/keyrings/leavs-camera.gpg
-echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/leavs-camera.gpg] https://leavs.github.io/Camera/ stable main' | sudo tee /etc/apt/sources.list.d/leavs-camera.list
+sudo install -m 644 /tmp/camera-apt-key.gpg /etc/apt/keyrings/leavs-tools.gpg
+echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/leavs-tools.gpg] https://leavs.github.io/apt/ stable main' | sudo tee /etc/apt/sources.list.d/leavs-tools.list
 sudo apt update
 sudo apt install usb-camera-preview
 ```
 
 之后使用 `sudo apt update && sudo apt upgrade` 获取更新。
 
-每次推送到 `main` 或手动触发 Actions，会在 Ubuntu 24.04 上构建安装包、检查安装、生成 APT 索引、签名并部署至 Pages。版本为 `VERSION` 加 `+git<运行编号>`，例如 `1.0.1+git1`。Pages 保留最近一次成功发布的软件包，构建产物也会保存在 Actions 的 `deb-amd64` artifact 中。
+每次推送到 `main` 或手动触发 Actions，会在 Ubuntu 24.04 上构建安装包、检查安装并发布 GitHub Release。公共仓库 [leavs/apt](https://github.com/leavs/apt) 每 15 分钟检查已登记工具的最新 Release，统一生成签名 APT 索引并部署至 Pages，也可手动触发。Camera 原有的 `https://leavs.github.io/Camera/` 软件源继续提供兼容服务，新安装请使用公共源。版本为 `VERSION` 加 `+git<运行编号>`，例如 `1.0.1+git1`。公共 Pages 提供每个已登记工具的最新 Release 软件包，构建产物也会保存在 Actions 的 `deb-amd64` artifact 中。
 
 公钥和指纹位于 `packaging/apt-key.gpg`、`packaging/apt-key.fingerprint`；私钥只存储于 GitHub Actions secret `APT_SIGNING_KEY`，本机备份位于 `~/.local/share/usb-camera-preview/apt-signing/`，不会提交至仓库。仓库变量 `APT_SIGNING_FINGERPRINT` 指定签名密钥。密钥变更后应更新公钥、指纹和客户端信任配置。
 

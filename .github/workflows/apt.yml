@@ -46,6 +46,26 @@ jobs:
         with:
           path: build/apt-repo
 
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: deb-amd64
+          path: dist
+      - name: Publish packages for the shared APT repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(cat VERSION)+git${GITHUB_RUN_NUMBER}"
+          gh release create "apt-${version}" dist/* \
+            --target "$GITHUB_SHA" --title "$version" \
+            --notes 'Ubuntu 24.04 amd64 package. Shared APT repository: https://leavs.github.io/apt/'
+
   deploy:
     needs: build
     runs-on: ubuntu-24.04
